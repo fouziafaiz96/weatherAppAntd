@@ -4,49 +4,31 @@ const headers = {
   "Content-Type": "application/json",
   Accept: "application/json",
 };
-export const fetchWeatherData = async () => {
-  var options: any = {
-    method: "GET",
-    url: "https://community-open-weather-map.p.rapidapi.com/weather",
-    params: {
-      q: "islamabad,pk",
-      lat: "33",
-      lon: "73",
-      callback: "test",
-      id: "2172797",
-      lang: "null",
-      units: "imperial",
-      mode: "xml",
-    },
-    headers: {
-      "x-rapidapi-host": "community-open-weather-map.p.rapidapi.com",
-      "x-rapidapi-key": "a6e0ca799939d44bba08ab47b4cb301d",
-    },
-  };
-
-  axios
-    .request(options)
-    .then(function (response) {
-      console.log(response);
-    })
-    .catch(function (error) {
-      console.error(error);
-    });
+export const fetchWeatherData = async (
+  searchQuery: string,
+  searchBy: string
+) => {
+  if (!searchBy) searchBy = "q";
+  let url = `https://api.openweathermap.org/data/2.5/weather?${searchBy}=${searchQuery},pk&appid=${API_KEY}&units=metric`;
+  try {
+    let res = await axios.get(url, { headers });
+    console.log("Daily weather Update", res.data);
+    return res.data;
+  } catch (error: any) {
+    throw new Error("Error in fetching weather data " + error);
+  }
 };
 
-export const fetchHistoricalData = async (city: string) => {
-  let prevDates: any;
-  var dataToSend = Array();
+export const fetchHistoricalData = async (lat: number, lng: number) => {
+  if (lat && lng) {
+    let url = `https://api.openweathermap.org/data/2.5/onecall?lat=${lat}&lon=${lng}&exclude=minutely,hourly&appid=${API_KEY}&units=metric`;
 
-  let url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}`;
-
-  try {
-    await axios.get(url, { headers }).then((res) => {
-      dataToSend.push(res.data);
-    });
-  } catch (error: any) {
-    return error;
+    try {
+      let res = await axios.get(url, { headers });
+      console.log("Data of seven days", res.data);
+      return res.data;
+    } catch (error: any) {
+      throw new Error("Error in historical data " + error);
+    }
   }
-
-  return dataToSend;
 };
